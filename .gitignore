@@ -1,0 +1,36 @@
+# IDE
+.idea/
+.vscode/
+*.suo
+*.user
+.vs/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+bin/
+obj/
+tasks.db
+
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal.DS_Store
+*.db
+*.db-wal
+*.db-shm
