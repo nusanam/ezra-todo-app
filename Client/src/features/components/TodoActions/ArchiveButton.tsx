@@ -8,6 +8,7 @@ interface ArchiveButtonProps {
   onArchive: () => void;
   isLoading?: boolean;
   disabled?: boolean;
+  isUpdating?: boolean;
 }
 
 export const ArchiveButton = ({

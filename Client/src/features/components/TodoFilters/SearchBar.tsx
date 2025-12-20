@@ -1,4 +1,4 @@
-// User input for searching todo items with basic debouncing (for scaling performance)
+// Search input with debouncing and keyboard shortcut support
 import { useDebounce } from '@/hooks';
 import { useTodoStore } from '@/stores/todoStore';
 import { X as DeleteIcon, Search as SearchIcon } from 'lucide-react';
@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 export const SearchBar = () => {
   const setSearchTerm = useTodoStore((state) => state.setSearchTerm);
+  const searchTerm = useTodoStore((state) => state.searchTerm);
   const clearSearch = useTodoStore((state) => state.clearSearch);
 
   // local state for immediate input feedback (offers better UX)
@@ -18,6 +19,13 @@ export const SearchBar = () => {
   useEffect(() => {
     setSearchTerm(debouncedSearchValue);
   }, [debouncedSearchValue, setSearchTerm]);
+
+  // sync local state when store is cleared (i.e. using Escape key)
+  useEffect(() => {
+    if (searchTerm === '' && localSearchValue !== '') {
+      setLocalSearchValue('');
+    }
+  }, [searchTerm]);
 
   const handleClear = () => {
     setLocalSearchValue('');

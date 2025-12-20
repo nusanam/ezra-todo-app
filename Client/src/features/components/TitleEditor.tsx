@@ -55,7 +55,7 @@ export const TitleEditor = ({ todo }: TitleEditorProps) => {
           onKeyDown={handleInputKeyDown}
           disabled={isPending}
           className={`
-            w-64 max-w-md px-2 py-1 border rounded
+            flex-1 px-2 py-1 border rounded
             ${error ? 'border-red-500' : 'border-gray-300'}
             focus:outline-none focus:ring-2 focus:ring-blue-500
             disabled:opacity-50

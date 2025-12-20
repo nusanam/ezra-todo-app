@@ -29,14 +29,17 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         ref={ref}
         variant={variant}
         size={size}
+        isLoading={false}
         className={cn(
           iconSizeStyles[size],
-          'aspect-square', // keep icon buttons square
+          'aspect-square',
           className
         )}
         {...props}
       >
-        {icon}
+        <span className="w-5 h-5 flex items-center justify-center">
+          {icon}
+        </span>
       </Button>
     );
   }

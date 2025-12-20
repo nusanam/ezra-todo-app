@@ -12,7 +12,7 @@
 */
 
 import { type Todo } from '@/api';
-import { EmptyState } from '@/components';
+import { EmptyState, LoadingSpinner } from '@/components';
 import { useTodoStore } from '@/stores/todoStore';
 import {
   AddTodo,
@@ -89,9 +89,12 @@ export const TodoPage = ({
             hasSearchTerm={hasSearchTerm}
           />
         ) : (
-          <div
-            className={`min-h-[700px] ${isFetching} ? 'opacity-70 transition-opacity' : ''}`}
-          >
+          <div className="min-h-[700px] relative">
+            {isFetching && (
+              <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
+                <LoadingSpinner size="xl" />
+              </div>
+            )}
             <TodoItemContainer todos={filteredTodos} totalPages={totalPages} />
           </div>
         )}

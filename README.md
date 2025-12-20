@@ -7,7 +7,6 @@ A fullstack task management application built with .NET 9 and React, demonstrati
 - [Quick Start](#quick-start)
 - [Application Overview](#application-overview)
 - [API Reference](#api-reference)
-- [Keyboard Shortcuts](#keyboard-shortcuts)
 - [Testing](#testing)
 - [Assumptions](#assumptions)
 - [Known Limitations](#known-limitations)
@@ -23,17 +22,26 @@ A fullstack task management application built with .NET 9 and React, demonstrati
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js 18+](https://nodejs.org/)
+- EF Core tools: `dotnet tool install --global dotnet-ef`
 - npm or nvm if you have multiple node versions
 
 ### Backend Setup
 
-Swagger docs: http://localhost:5209/swagger
-
 ```bash
 cd Server
+
+# Install EF tools if not already installed
+dotnet tool install --global dotnet-ef
+
+# Restore dependencies and create database
 dotnet restore
+dotnet ef database update --project TodoApi.Infrastructure --startup-project TodoApi.Api
+
+# Run the API
 dotnet run --project TodoApi.Api
-# API runs at http://localhost:5209
+
+# API: http://localhost:5209
+# Swagger: http://localhost:5209/swagger
 ```
 
 ### Frontend Setup (in new terminal)
@@ -57,14 +65,11 @@ A task management app where users can create, edit, complete, archive, and delet
 
 ### Core Features
 
-- Create, read, update, delete todos
-- Mark tasks complete/incomplete
-- Archive tasks (soft delete)
-- Search and filter by status (All, Active, Completed, Archived)
-- Server-side pagination with status filtering
+- CRUD operations with inline editing
+- Server-side pagination and status filtering
+- Optimistic updates with automatic rollback
 - Keyboard shortcuts for power users
-- Optimistic updates for responsive UI
-- Accessible UI (ARIA labels, screen reader announcements, keyboard navigation)
+- Accessible (ARIA labels, screen reader announcements)
 
 ---
 
@@ -80,20 +85,6 @@ A task management app where users can create, edit, complete, archive, and delet
 | DELETE | /api/todos/{id}   | Delete todo                                              |
 
 **Status filter values:** `all`, `active`, `completed`, `archived`
-
----
-
-## Keyboard Shortcuts
-
-| Key         | Action                                 |
-| ----------- | -------------------------------------- |
-| `n`         | Focus new todo input                   |
-| `/`         | Focus search                           |
-| `Esc`       | Cancel edit / Clear search             |
-| `Enter`     | Save edit (when editing)               |
-| `Spacebar`  | Toggle complete (when focused on task) |
-| `Tab`       | Navigate forward                       |
-| `Shift+Tab` | Navigate backward                      |
 
 ---
 
@@ -123,6 +114,11 @@ cd Client
 npm test
 ```
 
+Coverage:
+
+- Loading, error, and empty states
+- Search filtering (case-insensitive, special characters, whitespace handling)
+
 ---
 
 ## Assumptions
@@ -140,6 +136,8 @@ npm test
 1. **Search filters current page only** — Server-side search endpoint needed for cross-page search
 2. **SQLite DateTimeOffset** — Can't sort by DateTimeOffset; using DateTime instead
 3. **50ms search debounce** — Tradeoff between responsiveness and render batching
+4. **No bulk operations** — Cannot select multiple todos for batch actions
+5. **No due dates** — Tasks don't have deadlines or reminders
 
 ---
 
@@ -147,17 +145,19 @@ npm test
 
 ### High-Level Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Frontend (React)                        │
-│  User Action → Component → Hook → API Call → Update UI          │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼ HTTP
-┌─────────────────────────────────────────────────────────────────┐
-│                      Backend (.NET 9 API)                       │
-│  Request → Controller → Service → Repository → SQLite           │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Frontend ["Frontend (React)"]
+        direction LR
+        A[User Action] --> B[Component] --> C[Hook] --> D[API Call]
+    end
+
+    D -->|HTTP| E
+
+    subgraph Backend ["Backend (.NET 9)"]
+        direction LR
+        E[Controller] --> F[Service] --> G[Repository] --> H[(SQLite)]
+    end
 ```
 
 ### Example Flow: Creating a Todo
@@ -170,6 +170,32 @@ npm test
 6. **TodoRepository** persists to SQLite via Entity Framework
 7. **Response** returns new `TodoItemDTO`
 8. **React Query** invalidates cache, refetches, and updates UI
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Component as AddTodo.tsx
+    participant Hook as useCreateMutation
+    participant API as TodosController
+    participant Service as TodoService
+    participant Repo as TodoRepository
+    participant DB as SQLite
+
+    User->>Component: Types "Push code" + clicks Add
+    Component->>Hook: mutate({ title })
+    Hook->>API: POST /api/todos
+    API->>Service: CreateAsync(dto)
+    Service->>Repo: AddAsync(entity)
+    Repo->>DB: INSERT
+    DB-->>Repo: Success
+    Repo-->>Service: TodoItem
+    Service-->>API: TodoItemDTO
+    API-->>Hook: 201 Created
+    Hook->>Hook: Invalidate cache
+    Hook-->>Component: Update UI
+```
+
+---
 
 ### Backend Architecture (Clean Architecture)
 
@@ -196,40 +222,45 @@ TodoApi.Infrastructure/  # Data access (EF Core, SQLite, Repositories)
 
 ### Frontend Architecture
 
+#### File structure
+
 ```
 src/
-├── api/              # API client (fetch wrapper, type-safe calls)
-├── components/       # Reusable presentational components
-├── features/         # Feature-specific components (TodoItem, TodoList, TodoPage)
-├── hooks/            # Custom hooks (mutations, queries, keyboard shortcuts)
-├── stores/           # Zustand stores (UI state, not server state)
-└── utils/            # Helpers (date formatting, accessibility)
+├── api/          # Fetch wrapper, type-safe API calls
+├── components/   # Reusable UI (Button, Loading, Error, Empty states)
+├── features/     # Todo components (diagram above)
+├── hooks/        # React Query, mutations, keyboard shortcuts
+├── stores/       # Zustand (filters, search, notifications)
+└── utils/        # Helpers (dates, accessibility)
 ```
 
-**State Management Strategy:**
+#### Component Relationships
 
-- **Server state** (todos): React Query - handles caching, refetching, optimistic updates without manual boilerplate
-- **UI state** (filters, search, editing): Zustand - simple, no boilerplate
+- **TodoPageContainer** — Data fetching, loading/error states
+- **TodoPage** — Layout, coordinates child components
+- **TodoItem** — Single todo with inline actions
 
-**Why not Redux?** Overkill for this scope with excessive boilerplate. React Query handles server state better. Zustand uses immutability principles with lower overhead (8kb bundle size) and less boilerplate for UI state.
+```mermaid
+flowchart TB
+    TPC[TodoPageContainer]:::main --> TP[TodoPage]:::main
+    TP --> AT[AddTodo]
+    TP --> SB[SearchBar]
+    TP --> FT[FilterTabs]
+    TP --> TIC[TodoItemContainer]:::main
+    TIC --> TI[TodoItem]:::main
+    TI --> CB[CheckboxButton]
+    TI --> TE[TitleEditor]
+    TI --> AB[ArchiveButton]
+    TI --> DB[DeleteButton]
+
+    classDef main fill:#3b82f6,color:#fff
+```
+
+**State:** React Query for server data, Zustand for UI state.
 
 ---
 
 ## Design Decisions
-
-### SQLite Limitations
-
-SQLite doesn't support `DateTimeOffset` in ORDER BY clauses. Changed to `DateTime` for proper sorting. Production databases (PostgreSQL, SQL Server) support `DateTimeOffset` natively.
-
-### Why Single TodoService Instead of Separate Handlers?
-
-Initially implemented CQRS-style handlers (CreateTodoHandler, DeleteTodoHandler, etc.). Consolidated into single `TodoService` because:
-
-- **Simpler DI:** Needs one registration instead of five
-- **Cohesive:** CRUD on same entity belongs together
-- **Appropriate for scope:** CQRS separation matters when reads/writes have different scaling needs. A basic todo app doesn't have that requirement.
-
-**When I'd separate:** If queries needed caching layers, read replicas, or separate scaling from commands.
 
 ### Why Offset Pagination Over Cursor-Based?
 
@@ -241,9 +272,9 @@ Backend supports pagination via `?page=1&pageSize=10`. Chose offset pagination b
 
 **When I'd use cursor pagination:** Social media feeds, infinite scroll, handling millions of records, or frequently changing data where offset would cause duplicates/skips.
 
-### Why Server-Side Status Filtering?
+### Why Server-Side Status Filtering + Client-Side Search?
 
-Status filtering (All/Active/Completed/Archived) happens on the backend via query parameter:
+Status filtering (All/Active/Completed/Archived) happens server-side:
 
 ```
 GET /api/todos?page=1&pageSize=10&status=active
@@ -252,22 +283,18 @@ GET /api/todos?page=1&pageSize=10&status=active
 **Benefits:**
 
 - Pagination counts are accurate for the filtered set
-- Archiving all items on a page correctly shows remaining items
 - Scales to large datasets without fetching everything
 
-### Why Client-Side Search?
+Search remains client-side (filters current page) because:
 
-Search filtering remains client-side (filters current page results) because:
+- Instant feedback without network latency
+- Acceptable tradeoff for personal todo lists
 
-- **Instant feedback:** No network latency while typing
-- **Simple implementation:** Just `.filter()` on current page data
-- **Acceptable tradeoff:** For personal todo lists, searching within current view is often sufficient
-
-**Limitation:** Search only filters the current page. For cross-page search, a server-side search endpoint would be needed.
+**Limitation:** Cross-page search would need a server-side endpoint.
 
 ### Why Optimistic Updates?
 
-Allows immediate UI updates when toggling between complete/incomplete and archive/unarchive, and delete, without waiting for the server confirms. Benefits:
+Allows immediate UI updates when toggling between complete/incomplete and archive/unarchive, and delete, without waiting for the server confirmation. Benefits:
 
 - **Responsive feel:** No loading spinners for simple actions
 - **Automatic rollback:** React Query reverts if server fails
@@ -285,7 +312,7 @@ Allows immediate UI updates when toggling between complete/incomplete and archiv
 
 ### Scaling to 10K+ Todos
 
-- Utilize server-side pagination using different strategies possibly
+- Utilize server-side pagination using different strategies
 - Add server-side search endpoint to filter _all_ todos and not just those on the current page
 - Add database indexes on `CreatedAt`, `IsCompleted`, `IsArchived`
 
