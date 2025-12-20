@@ -19,8 +19,8 @@ namespace TodoApi.Infrastructure.Migrations
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     IsCompleted = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsArchived = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

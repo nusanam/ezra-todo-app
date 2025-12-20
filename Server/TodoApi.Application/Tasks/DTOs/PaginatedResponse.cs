@@ -1,6 +1,6 @@
 namespace TodoApi.Application.Tasks.DTOs;
 
-public record PaginationDTO<T>(
+public record PaginatedResponse<T>(
     IEnumerable<T> Items,
     int Page,
     int PageSize,

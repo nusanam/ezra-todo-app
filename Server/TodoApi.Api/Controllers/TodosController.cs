@@ -5,6 +5,10 @@ using TodoApi.Application.Tasks.Interfaces;
 
 namespace TodoApi.Api.Controllers;
 
+/// <summary>
+/// REST API controller for todo operations.
+/// Provides RUD endpoints with pagination and server-side filtering.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class TodosController : ControllerBase
@@ -15,6 +19,13 @@ public class TodosController : ControllerBase
     {
         _todoService = todoService;
     }
+    
+    [HttpGet("counts")]
+    public async Task<ActionResult<TodoCountsDTO>> GetCounts()
+    {
+        var counts = await _todoService.GetCountsAsync();
+        return Ok(counts);
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TodoItemDTO>> GetById(Guid id)
@@ -24,26 +35,30 @@ public class TodosController : ControllerBase
     }
     
     /// <summary>
-    /// Gets all todos, optionally paginated.
+    /// Gets todos with optional pagination and status filtering.
     /// </summary>
-    /// <param name="page">Page number (1-based). If provided, returns paginated response.</param>
-    /// <param name="pageSize">Items per page. Default 10, max 100.</param>
+    /// <remarks>
+    /// Without page param: returns all non-archived todos.
+    /// With page param: returns paginated results filtered by status.
+    /// </remarks>
+    /// <param name="page">Page number (1-indexed). If null, returns all todos.</param>
+    /// <param name="pageSize">Items per page (1-100, default 10).</param>
+    /// <param name="status">Filter by status: all, active, completed, archived.</param>
     [HttpGet]
-    public async Task<ActionResult> GetAll([FromQuery] int? page, [FromQuery] int pageSize = 10)
+    [HttpGet]
+    public async Task<ActionResult> GetAll(
+        [FromQuery] int? page, 
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? status = null)
     {
-        // No pagination requested - return all (backward compatible)
+        // if no pagination requested - return all (backward compatible)
         if (page is null)
         {
             var todos = await _todoService.GetAllAsync();
             return Ok(todos);
         }
 
-        // Validate pagination params
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 10;
-        if (pageSize > 100) pageSize = 100;
-
-        var pagedResult = await _todoService.GetPaginationAsync(page.Value, pageSize);
+        var pagedResult = await _todoService.GetPaginationAsync(page.Value, pageSize, status);
         return Ok(pagedResult);
     }
 

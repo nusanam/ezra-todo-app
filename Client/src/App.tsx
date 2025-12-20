@@ -1,5 +1,5 @@
 import { NotificationContainer } from '@/components';
-import { TodoListContainer } from '@/features/components';
+import { TodoPageContainer } from '@/features/components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
@@ -21,7 +21,7 @@ const queryClient = new QueryClient({
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TodoListContainer />
+      <TodoPageContainer />
       <NotificationContainer />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

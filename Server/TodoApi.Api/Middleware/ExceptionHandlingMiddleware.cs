@@ -26,6 +26,9 @@ public class ExceptionHandlingMiddleware
 
     private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
+        // uncomment to debug pagination queries
+        // Console.WriteLine($"ERROR: {exception}");  
+
         context.Response.ContentType = "application/json";
 
         var (statusCode, message) = exception switch

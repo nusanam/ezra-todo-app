@@ -1,12 +1,12 @@
 // Handles displays and user actions (ie: delete) for a single todo item
 
-import { Todo } from '@/api';
+import { type Todo } from '@/api';
 import { useTodoItem } from '@/hooks';
 import { formatDate } from '@/utils/dateUtils';
-import { ArchiveButton } from './ArchiveButton';
-import { CheckboxButton } from './CheckboxButton';
-import { DeleteButton } from './DeleteButton';
-import { EditTodo } from './EditTodo';
+import { TitleEditor } from '../TitleEditor';
+import { ArchiveButton } from '../TodoActions/ArchiveButton';
+import { CheckboxButton } from '../TodoActions/CheckboxButton';
+import { DeleteButton } from '../TodoActions/DeleteButton';
 
 interface TodoItemProps {
   todo: Todo;
@@ -47,7 +47,7 @@ export const TodoItem = ({ todo }: TodoItemProps) => {
         />
 
         <div className="flex-1">
-          <EditTodo todo={todo} />
+          <TitleEditor todo={todo} />
           <TodoMetadata todo={todo} />
         </div>
       </div>

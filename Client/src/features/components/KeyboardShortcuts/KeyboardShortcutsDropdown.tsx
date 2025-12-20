@@ -33,6 +33,7 @@ export const KeyboardShortcutsDropdown = () => {
     { key: 'n', description: 'Add new task' },
     { key: 'Esc', description: 'Clear search / Cancel edit' },
     { key: 'Enter', description: 'Save task (when editing)' },
+    { key: 'Space', description: 'Toggle checkbox' },
     { key: 'Tab', description: 'Navigate forward' },
     { key: 'Shift+Tab', description: 'Navigate backward' },
   ];
@@ -49,7 +50,7 @@ export const KeyboardShortcutsDropdown = () => {
         aria-expanded={isOpen}
       >
         <Keyboard className="h-3 w-3" />
-        <span>Keyboard Shortcuts</span>
+        Keyboard Shortcuts
         {isOpen ? (
           <ChevronUp className="h-3 w-3" />
         ) : (
@@ -62,7 +63,7 @@ export const KeyboardShortcutsDropdown = () => {
           className="
             absolute top-full mt-2 right-0 z-10
             bg-white rounded-lg shadow-lg border border-gray-200
-            p-4 min-w-[280px]
+            p-4 min-w-[290px]
           "
           ref={dropdownRef}
           role="region"

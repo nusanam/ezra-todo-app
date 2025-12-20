@@ -19,6 +19,23 @@ public class TodoService : ITodoService
     }
 
     // Queries
+    public async Task<IEnumerable<TodoItemDTO>> GetAllAsync()
+    {
+        var todos = await _repository.GetAllAsync();
+        return todos.Select(TodoItemDTO.FromEntity);
+    }
+    
+    public async Task<TodoCountsDTO> GetCountsAsync()
+    {
+        var todos = (await _repository.GetAllAsync()).ToList();
+        return new TodoCountsDTO(
+            All: todos.Count(t => !t.IsArchived),
+            Active: todos.Count(t => !t.IsCompleted && !t.IsArchived),
+            Completed: todos.Count(t => t.IsCompleted && !t.IsArchived),
+            Archived: todos.Count(t => t.IsArchived)
+        );
+    }
+    
     public async Task<TodoItemDTO> GetByIdAsync(Guid id)
     {
         var todo = await _repository.GetByIdAsync(id);
@@ -26,21 +43,23 @@ public class TodoService : ITodoService
 
         return TodoItemDTO.FromEntity(todo);
     }
+    
+    /// <summary>
+    /// Gets paginated todos with status filtering and input validation.
+    /// Validates page/pageSize bounds and delegates filtering to repository.
+    /// </summary>
+    public async Task<PaginatedResponse<TodoItemDTO>> GetPaginationAsync(int page, int pageSize, string? status = null)
+    {
+        if (pageSize < 1) pageSize = 10; // default value of tasks per page
+        if (page < 1) page = 1;
 
-    public async Task<IEnumerable<TodoItemDTO>> GetAllAsync()
-    {
-        var todos = await _repository.GetAllAsync();
-        return todos.Select(TodoItemDTO.FromEntity);
-    }
-    
-    public async Task<PaginationDTO<TodoItemDTO>> GetPaginationAsync(int page, int pageSize)
-    {
-        var (items, totalCount) = await _repository.GetPaginationAsync(page, pageSize);
-    
+        var (items, totalCount) = await _repository.GetPaginationAsync(page, pageSize, status);
+
         var dtos = items.Select(TodoItemDTO.FromEntity);
+        
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-        return new PaginationDTO<TodoItemDTO>(dtos, page, pageSize, totalCount, totalPages);
+        return new PaginatedResponse<TodoItemDTO>(dtos, page, pageSize, totalCount, totalPages);
     }
 
     // Commands

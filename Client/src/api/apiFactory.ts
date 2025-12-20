@@ -1,5 +1,13 @@
 // API factory service
 
+export interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
 /**
  * Handles HTTP response processing with consistent error handling.
  * Throws descriptive errors for non-OK responses.
@@ -54,9 +62,29 @@ export const apiFactory = <T = unknown>(baseUrl: string) => {
     return result ?? [];
   };
 
+  const getPaginated = async (
+    page: number,
+    pageSize: number = 10,
+    status?: string
+  ): Promise<PaginatedResponse<T>> => {
+    let url = `${baseUrl}?page=${page}&pageSize=${pageSize}`;
+    if (status) url += `&status=${status}`;
+    const response = await fetch(url);
+    const result = await handleResponse<PaginatedResponse<T>>(response);
+    if (!result) throw new Error('Expected paginated response but got none');
+    return result;
+  };
+
   const getById = async (id: string): Promise<T | null> => {
     const response = await fetch(`${baseUrl}/${id}`);
     return handleResponse<T>(response);
+  };
+
+  const getCustom = async <TResult>(path: string): Promise<TResult> => {
+    const response = await fetch(`${baseUrl}${path}`);
+    const result = await handleResponse<TResult>(response);
+    if (!result) throw new Error('Expected response but got none');
+    return result;
   };
 
   const post = async <TBody extends Record<string, unknown>>(
@@ -93,5 +121,5 @@ export const apiFactory = <T = unknown>(baseUrl: string) => {
     await handleResponse(response);
   };
 
-  return { get, getById, post, patch, delete: del };
+  return { get, getPaginated, getCustom, getById, post, patch, delete: del };
 };

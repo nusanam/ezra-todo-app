@@ -5,9 +5,9 @@ export {
   useDeleteMutation,
   useUpdateMutation,
 } from './mutations';
-export { useTodosQuery } from './queries';
+export { useOneTodo, useTodosQuery, useUnpaginatedTodos } from './queries';
 export { useDebounce } from './useDebounce';
-export { useEditTodo } from './useEditTodo';
+export { useEditTodo } from './useTitleEditor';
 export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useNotifications } from './useNotifications';
 export { useTodoItem } from './useTodoItem';

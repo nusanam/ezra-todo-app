@@ -1,15 +1,18 @@
-// todo item + user actions
+// main container and presentational components
+export { TodoPage } from './TodoPage';
+export { TodoPageContainer } from './TodoPageContainer';
+
+// todo item
+export { TodoItemContainer } from './TodoItem';
+
+// user actions
 export {
   AddTodo,
   ArchiveButton,
   CheckboxButton,
   DeleteButton,
-  FilterTabs,
-  SearchBar,
-  TodoItem,
-} from './TodoItem';
+} from './TodoActions';
 
-// main container and presentational components
+// todo filters
 export { KeyboardShortcutsDropdown, ShortcutHints } from './KeyboardShortcuts';
-export { TodoList } from './TodoList';
-export { TodoListContainer } from './TodoListContainer';
+export { FilterTabs, SearchBar } from './TodoFilters';

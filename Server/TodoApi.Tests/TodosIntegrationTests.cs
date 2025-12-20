@@ -41,6 +41,70 @@ public class TodosIntegrationTests : IClassFixture<IntegrationTestFactory>
     }
 
     #endregion
+    
+    #region GET /api/todos (Pagination & Filtering)
+
+    [Fact]
+    public async Task GET_ReturnsPaginatedResults_WhenPageParamProvided()
+    {
+        // arrange - create 3 todos
+        await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Todo 1"));
+        await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Todo 2"));
+        await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Todo 3"));
+
+        // act
+        var response = await _client.GetAsync("/api/todos?page=1&pageSize=2");
+
+        // assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<PaginatedResponse>();
+        result!.Items.Should().HaveCount(2);
+        result.TotalCount.Should().BeGreaterThanOrEqualTo(3);
+        result.TotalPages.Should().BeGreaterThanOrEqualTo(2);
+    }
+
+    [Fact]
+    public async Task GET_FiltersbyStatus_WhenStatusParamProvided()
+    {
+        // arrange
+        var createResponse = await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Complete me"));
+        var created = await createResponse.Content.ReadFromJsonAsync<TodoItemDTO>();
+        await _client.PatchAsJsonAsync($"/api/todos/{created!.Id}", new UpdateTodo(null, true, null));
+
+        // act
+        var response = await _client.GetAsync("/api/todos?page=1&pageSize=10&status=completed");
+
+        // assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<PaginatedResponse>();
+        result!.Items.Should().OnlyContain(t => t.IsCompleted);
+    }
+
+    #endregion
+
+    #region GET /api/todos/counts
+
+[Fact]
+public async Task GET_Counts_ReturnsCorrectCounts()
+{
+    // arrange
+    await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Active todo"));
+    
+    var createResponse = await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Completed todo"));
+    var completed = await createResponse.Content.ReadFromJsonAsync<TodoItemDTO>();
+    await _client.PatchAsJsonAsync($"/api/todos/{completed!.Id}", new UpdateTodo(null, true, null));
+
+    // act
+    var response = await _client.GetAsync("/api/todos/counts");
+
+    // assert
+    response.StatusCode.Should().Be(HttpStatusCode.OK);
+    var counts = await response.Content.ReadFromJsonAsync<TodoCountsDTO>();
+    counts!.Active.Should().BeGreaterThanOrEqualTo(1);
+    counts.Completed.Should().BeGreaterThanOrEqualTo(1);
+}
+
+#endregion
 
     #region POST /api/todos
 

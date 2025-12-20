@@ -1,16 +1,17 @@
-/** Presentational component that renders todo list.
- * Receives filtered data from TodoListContainer.
+/** Presentational component that renders todo list. Receives filtered data from TodoPageContainer.
+ *
+ * Uses transition and minimum heights to smooth UI pagination transitions
  *
  * Sections:
  * - Header with keyboard shortcuts help
  * - Add todo form
  * - Search and filter controls
- * - Todo items or empty state (for no non-archived todos)
+ * - Paginated todo items or empty state (for no non-archived todos)
 
  * Note: archived todos do not show up when the filter view is set to 'All' todos
 */
 
-import { Todo } from '@/api';
+import { type Todo } from '@/api';
 import { EmptyState } from '@/components';
 import { useTodoStore } from '@/stores/todoStore';
 import {
@@ -19,20 +20,23 @@ import {
   KeyboardShortcutsDropdown,
   SearchBar,
   ShortcutHints,
-  TodoItem,
+  TodoItemContainer,
 } from '.';
 
-interface TodoListProps {
-  todos: Todo[];
+interface TodoPageProps {
   filteredTodos: Todo[];
   hasSearchTerm: boolean;
+  totalPages: number;
+  totalCount: number;
+  isFetching: boolean;
 }
 
-export const TodoList = ({
-  todos,
+export const TodoPage = ({
   filteredTodos,
   hasSearchTerm,
-}: TodoListProps) => {
+  totalPages,
+  isFetching,
+}: TodoPageProps) => {
   const filterStatus = useTodoStore((state) => state.filterStatus);
   const searchTerm = useTodoStore((state) => state.searchTerm);
 
@@ -40,7 +44,7 @@ export const TodoList = ({
     <div
       role="main"
       id="main-content"
-      aria-label="Todo list"
+      aria-label="Todo Page"
       className="min-h-screen bg-gray-50"
     >
       <div className="max-w-3xl mx-auto p-6">
@@ -49,7 +53,7 @@ export const TodoList = ({
           aria-label="Keyboard shortcuts help"
           className="flex justify-between items-start mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900">My Tasks</h1>
+          <h1 className="text-3xl font-bold text-gray-900">My Todos</h1>
 
           <ShortcutHints />
           <KeyboardShortcutsDropdown />
@@ -61,14 +65,14 @@ export const TodoList = ({
         </section>
 
         {/* Search and Filters */}
-        <section aria-label="Task list" className="mb-6 space-y-4">
+        <section aria-label="Todo Filters" className="mb-6 space-y-4">
           <SearchBar />
-          <FilterTabs todos={todos} />
+          <FilterTabs />
           <br />
           <span className="text-xs text-gray-400 mt-1">Press / to search</span>
         </section>
         {/* Search Results Count */}
-        {searchTerm && (
+        {searchTerm.trim() && (
           <section
             aria-label="Search results count"
             className="mb-4 text-sm text-gray-600"
@@ -78,17 +82,17 @@ export const TodoList = ({
           </section>
         )}
 
-        {/* Todo List or Empty State */}
+        {/* Paginated todos or Empty State */}
         {filteredTodos.length === 0 ? (
           <EmptyState
             filterStatus={filterStatus}
             hasSearchTerm={hasSearchTerm}
           />
         ) : (
-          <div aria-label="Todo item" className="space-y-2">
-            {filteredTodos.map((todo) => (
-              <TodoItem key={todo.id} todo={todo} />
-            ))}
+          <div
+            className={`min-h-[700px] ${isFetching} ? 'opacity-70 transition-opacity' : ''}`}
+          >
+            <TodoItemContainer todos={filteredTodos} totalPages={totalPages} />
           </div>
         )}
       </div>

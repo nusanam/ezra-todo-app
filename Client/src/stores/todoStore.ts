@@ -1,18 +1,33 @@
-// Todo store to manage search terms, todo filter status, and editing (doesn't manage todo data) with set() and get() methods for state management
+/** Todo store manges:
+ * Pagination (set todo items per page here using pageSize)
+ * Search terms
+ * Todo filter status
+ * Editing - doesn't manage todo data but uses set() and get() methods for state management
+ */
+
 import { create } from 'zustand';
 
 type FilterStatus = 'all' | 'active' | 'completed' | 'archived';
 
 interface TodoStore {
+  // search
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   clearSearch: () => void;
 
+  // edit
+  editingTodoId: string | null;
+  setEditingTodoId: (id: string | null) => void;
+
+  // filter
   filterStatus: FilterStatus;
   setFilterStatus: (status: FilterStatus) => void;
 
-  editingTodoId: string | null;
-  setEditingTodoId: (id: string | null) => void;
+  // pagination
+  currentPage: number;
+  pageSize: number;
+  setCurrentPage: (page: number) => void;
+  setPageSize: (size: number) => void;
 
   resetFilters: () => void;
 }
@@ -22,15 +37,21 @@ export const useTodoStore = create<TodoStore>((set) => ({
   setSearchTerm: (term) => set({ searchTerm: term }),
   clearSearch: () => set({ searchTerm: '' }),
 
+  editingTodoId: null,
+  setEditingTodoId: (id) => set({ editingTodoId: id }),
+
   filterStatus: 'all',
   setFilterStatus: (status) => set({ filterStatus: status }),
 
-  editingTodoId: null,
-  setEditingTodoId: (id) => set({ editingTodoId: id }),
+  currentPage: 1,
+  pageSize: 10, // not too few to avoid clicking multiple pages) but not excessive, which would defeat the purpose of pagination
+  setCurrentPage: (page) => set({ currentPage: page }),
+  setPageSize: (size) => set({ pageSize: size, currentPage: 1 }),
 
   resetFilters: () =>
     set({
       searchTerm: '',
       filterStatus: 'all',
+      currentPage: 1,
     }),
 }));

@@ -46,15 +46,15 @@ export const NotificationContainer = () => {
 
   return (
     <div
-      className="fixed top-4 right-4 z-50 pointer-events-none"
+      className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"
       aria-live="assertive"
       aria-atomic="true"
     >
-      <div className="space-y-2 pointer-events-auto">
-        {notifications.map((notification) => (
-          <NotificationWithAnimation key={notification.id} {...notification} />
-        ))}
-      </div>
+      {notifications.map((notification) => (
+        <div key={notification.id} className="pointer-events-auto">
+          <NotificationWithAnimation {...notification} />
+        </div>
+      ))}
     </div>
   );
 };

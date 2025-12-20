@@ -1,4 +1,4 @@
-import { Todo, updateTodo } from '@/api';
+import { type Todo, updateTodo } from '@/api';
 import { notify } from '@/stores/notificationStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 

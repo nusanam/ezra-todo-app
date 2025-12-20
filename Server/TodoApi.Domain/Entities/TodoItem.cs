@@ -10,8 +10,8 @@ public class TodoItem
     public string Title { get; private set; } = string.Empty;
     public bool IsCompleted { get; private set; }
     public bool IsArchived { get; private set; }
-    public DateTimeOffset CreatedAt { get; private set; }
-    public DateTimeOffset? UpdatedAt { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
 
     public static TodoItem Create(string title)
     {
@@ -24,7 +24,7 @@ public class TodoItem
             Title = title,
             IsCompleted = false,
             IsArchived = false,
-            CreatedAt = DateTimeOffset.UtcNow
+            CreatedAt = DateTime.Now
         };
     }
 
@@ -35,30 +35,35 @@ public class TodoItem
         if (title.Length > 100) throw new ArgumentException("Title cannot exceed 100 characters.", nameof(title));
 
         Title = title;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTime.Now
+;
     }
 
     public void MarkComplete()
     {
         IsCompleted = true;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTime.Now
+;
     }
 
     public void MarkIncomplete()
     {
         IsCompleted = false;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTime.Now
+;
     }
 
     public void Archive()
     {
         IsArchived = true;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTime.Now
+;
     }
 
     public void Unarchive()
     {
         IsArchived = false;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTime.Now
+;
     }
 }

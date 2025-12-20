@@ -22,23 +22,20 @@ export const useKeyboardShortcuts = () => {
     const handleKeyPress = (e: KeyboardEvent) => {
       // Escape handler
       if (e.key === 'Escape') {
-        console.log('Escape pressed', { editingTodoId, searchTerm });
-        // If editing, ONLY cancel edit, don't touch search
+        // if editing, ONLY cancel edit, don't affect search
         if (editingTodoId) {
-          console.log('Canceling edit only');
           e.preventDefault();
           e.stopPropagation(); // add this to stop event propagation;
 
-          // Don't check searchTerm at all when editing
+          // don't check searchTerm at all when editing
         }
-        // Only check search if NOT editing
+        // only check search if NOT editing
         else if (searchTerm) {
-          console.log('Clearing search');
           e.preventDefault();
           clearSearch();
         }
 
-        // Blur only if not editing
+        // blur only if not editing
         if (!editingTodoId && document.activeElement instanceof HTMLElement) {
           document.activeElement.blur();
         }

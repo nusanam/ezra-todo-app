@@ -12,9 +12,13 @@ namespace TodoApi.Application.Tasks.Interfaces;
 public interface ITodoService
 {
     // Queries
+    Task<TodoCountsDTO> GetCountsAsync();
     Task<TodoItemDTO> GetByIdAsync(Guid id);
     Task<IEnumerable<TodoItemDTO>> GetAllAsync();
-    Task<PaginationDTO<TodoItemDTO>> GetPaginationAsync(int page, int pageSize);
+    Task<PaginatedResponse<TodoItemDTO>> GetPaginationAsync(
+        int page, 
+        int pageSize, 
+        string? status = null);
 
     // Commands
     Task<TodoItemDTO> CreateAsync(CreateTodo command);

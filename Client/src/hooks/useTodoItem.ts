@@ -1,5 +1,5 @@
 // Handler functions that manage todo item actions like toggling complete, archive, and delete. Can scale to use timed undo actions for deleted tasks
-import { Todo } from '@/api';
+import { type Todo } from '@/api';
 import { useDeleteMutation, useUpdateMutation } from '@/hooks';
 import { useTodoStore } from '@/stores/todoStore';
 import { useCallback } from 'react';

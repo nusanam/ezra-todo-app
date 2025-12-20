@@ -12,7 +12,7 @@ export const SearchBar = () => {
   const [localSearchValue, setLocalSearchValue] = useState('');
 
   // filter tasks using debounced value
-  const debouncedSearchValue = useDebounce(localSearchValue, 300);
+  const debouncedSearchValue = useDebounce(localSearchValue, 50);
 
   // update client state (zustand) when debounced value changes
   useEffect(() => {

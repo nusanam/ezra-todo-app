@@ -4,7 +4,8 @@
  * Features:
  * - Validation: Required field, 1-100 character limit
  * - Keyboard: Quick access via 'n' key, Enter to submit
- * - Accessibility: Screen reader announcements on submit
+ * - Accessibility: Screen reader announcements on submit.
+ * - UX enhancement: smooths out error message transitions
  */
 
 import { useCreateMutation } from '@/hooks';
@@ -24,12 +25,7 @@ export const AddTodo = () => {
     handleSubmit,
     reset,
     formState: { errors },
-    watch,
   } = useForm<FormData>();
-
-  // Add this to see what's being typed
-  const watchedTitle = watch('title');
-  console.log('Current title value:', watchedTitle);
 
   const onSubmit = async (data: FormData) => {
     await createMutation.mutate(
@@ -67,6 +63,12 @@ export const AddTodo = () => {
             registerRef(e);
             inputRef.current = e;
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              reset();
+              e.currentTarget.blur();
+            }
+          }}
           type="text"
           placeholder="Add a new task..."
           className="
@@ -87,9 +89,13 @@ export const AddTodo = () => {
           Add
         </button>
       </div>
-      {errors.title && (
-        <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-      )}
+
+      {/* reserves space for an error to smooth out error message transitions */}
+      <div className="h-5 mt-1">
+        {errors.title && (
+          <p className="text-sm text-red-600">{errors.title.message}</p>
+        )}
+      </div>
     </form>
   );
 };

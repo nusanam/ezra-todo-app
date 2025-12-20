@@ -7,8 +7,8 @@ public record TodoItemDTO(
     string Title,
     bool IsCompleted,
     bool IsArchived,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt)
+    DateTime CreatedAt,
+    DateTime? UpdatedAt)
 {
     public static TodoItemDTO FromEntity(TodoItem entity)
     {

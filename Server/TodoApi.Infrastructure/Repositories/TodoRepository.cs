@@ -14,12 +14,32 @@ public class TodoRepository : ITodoRepository
         _context = context;
     }
     
-    public async Task<(IEnumerable<TodoItem> Items, int TotalCount)> GetPaginationAsync(int page, int pageSize)
+    /// <summary>
+    /// Gets paginated todos with server-side status filtering.
+    /// Filters are applied before pagination for accurate counts.
+    /// </summary>
+    /// <param name="page">1-indexed page number</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="status">Filter: active, completed, archived, or all (default)</param>
+    /// <returns>Tuple of filtered items and total count for pagination</returns>
+    public async Task<(IEnumerable<TodoItem> Items, int TotalCount)> GetPaginationAsync(int page, int pageSize, string? status = null)
     {
-        var totalCount = await _context.Todos.CountAsync();
-        
-        var items = await _context.Todos
-            .AsNoTracking()
+        var query = _context.Todos.AsNoTracking();
+
+        // apply todo status filter
+        query = status?.ToLower() switch
+        {
+            "active" => query.Where(t => !t.IsCompleted && !t.IsArchived),
+            "completed" => query.Where(t => t.IsCompleted && !t.IsArchived),
+            "archived" => query.Where(t => t.IsArchived),
+            _ => query.Where(t => !t.IsArchived) // "all" or null
+        };
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            // SQLite doesn't support DateTimeOffset in ORDER BY, so need to use DateTime
+            // see: https://docs.microsoft.com/en-us/ef/core/providers/sqlite/limitations
             .OrderByDescending(t => t.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)

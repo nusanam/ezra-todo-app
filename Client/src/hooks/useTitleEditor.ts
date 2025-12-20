@@ -15,7 +15,7 @@
  * @param todo - The todo item being edited
  * @returns Edit state, handlers, and validation errors
  */
-import { Todo } from '@/api';
+import { type Todo } from '@/api';
 import { useUpdateMutation } from '@/hooks';
 import { useTodoStore } from '@/stores/todoStore';
 import {
@@ -109,12 +109,12 @@ export const useEditTodo = (todo: Todo) => {
 
   const handleInputKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Enter') {
         e.preventDefault();
-        e.stopPropagation(); // prevent bubbling to avoid conflicts with escaping edit mode clearing search results unintentionally
         handleSave();
-      } else if (e.key === 'Enter') {
-        e.preventDefault;
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation(); // prevents bubbling so that the global escape handler doesn't also clear search
         handleCancel();
       }
     },
