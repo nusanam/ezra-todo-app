@@ -7,7 +7,7 @@ namespace TodoApi.Api.Controllers;
 
 /// <summary>
 /// REST API controller for todo operations.
-/// Provides RUD endpoints with pagination and server-side filtering.
+/// Provides CRUD endpoints with pagination and server-side filtering.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -44,7 +44,6 @@ public class TodosController : ControllerBase
     /// <param name="page">Page number (1-indexed). If null, returns all todos.</param>
     /// <param name="pageSize">Items per page (1-100, default 10).</param>
     /// <param name="status">Filter by status: all, active, completed, archived.</param>
-    [HttpGet]
     [HttpGet]
     public async Task<ActionResult> GetAll(
         [FromQuery] int? page, 

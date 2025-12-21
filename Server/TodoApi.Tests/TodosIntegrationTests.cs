@@ -84,27 +84,27 @@ public class TodosIntegrationTests : IClassFixture<IntegrationTestFactory>
 
     #region GET /api/todos/counts
 
-[Fact]
-public async Task GET_Counts_ReturnsCorrectCounts()
-{
-    // arrange
-    await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Active todo"));
-    
-    var createResponse = await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Completed todo"));
-    var completed = await createResponse.Content.ReadFromJsonAsync<TodoItemDTO>();
-    await _client.PatchAsJsonAsync($"/api/todos/{completed!.Id}", new UpdateTodo(null, true, null));
+    [Fact]
+    public async Task GET_Counts_ReturnsCorrectCounts()
+    {
+        // arrange
+        await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Active todo"));
+        
+        var createResponse = await _client.PostAsJsonAsync("/api/todos", new CreateTodo("Completed todo"));
+        var completed = await createResponse.Content.ReadFromJsonAsync<TodoItemDTO>();
+        await _client.PatchAsJsonAsync($"/api/todos/{completed!.Id}", new UpdateTodo(null, true, null));
 
-    // act
-    var response = await _client.GetAsync("/api/todos/counts");
+        // act
+        var response = await _client.GetAsync("/api/todos/counts");
 
-    // assert
-    response.StatusCode.Should().Be(HttpStatusCode.OK);
-    var counts = await response.Content.ReadFromJsonAsync<TodoCountsDTO>();
-    counts!.Active.Should().BeGreaterThanOrEqualTo(1);
-    counts.Completed.Should().BeGreaterThanOrEqualTo(1);
-}
+        // assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var counts = await response.Content.ReadFromJsonAsync<TodoCountsDTO>();
+        counts!.Active.Should().BeGreaterThanOrEqualTo(1);
+        counts.Completed.Should().BeGreaterThanOrEqualTo(1);
+    }
 
-#endregion
+    #endregion
 
     #region POST /api/todos
 

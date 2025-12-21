@@ -97,7 +97,7 @@ cd Server
 dotnet test
 ```
 
-Tests cover full HTTP pipeline: Controller → Service → Repository → SQLite (in-memory).
+Tests cover full HTTP pipeline: Controller → Service → Repository → SQLite (file-based).
 
 Coverage:
 
@@ -199,17 +199,22 @@ sequenceDiagram
 
 ### Backend Architecture (Clean Architecture)
 
+Dependency flow
+
 ```
-TodoApi.Api/             # HTTP layer (Controllers, Exception Handling Middleware)
-    ↓ depends on
+REQUEST FLOW                    DEPENDENCY DIRECTION
+─────────────                   ────────────────────
 
-TodoApi.Application/     # Business logic (Services, DTOs, Interfaces, Validation)
-    ↓ depends on
-
-TodoApi.Domain/          # Core entities (TodoItem, Exceptions)
-
-    ↑ implements
-TodoApi.Infrastructure/  # Data access (EF Core, SQLite, Repositories)
+TodoApi.Api                     Api
+     │                           │
+     ▼                           ▼
+TodoApi.Application             Application ◄─── Infrastructure
+     │                           │                (implements)
+     ▼                           ▼
+TodoApi.Infrastructure          Domain
+     │
+     ▼
+TodoApi.Domain
 ```
 
 **Goal:** Dependencies flow inward and domain has zero dependencies. Infrastructure implements interfaces defined in Application.
@@ -228,7 +233,7 @@ TodoApi.Infrastructure/  # Data access (EF Core, SQLite, Repositories)
 src/
 ├── api/          # Fetch wrapper, type-safe API calls
 ├── components/   # Reusable UI (Button, Loading, Error, Empty states)
-├── features/     # Todo components (diagram above)
+├── features/     # Todo components
 ├── hooks/        # React Query, mutations, keyboard shortcuts
 ├── stores/       # Zustand (filters, search, notifications)
 └── utils/        # Helpers (dates, accessibility)
@@ -285,7 +290,7 @@ GET /api/todos?page=1&pageSize=10&status=active
 - Pagination counts are accurate for the filtered set
 - Scales to large datasets without fetching everything
 
-Search remains client-side (filters current page) because:
+Search remains client-side because:
 
 - Instant feedback without network latency
 - Acceptable tradeoff for personal todo lists
@@ -294,7 +299,9 @@ Search remains client-side (filters current page) because:
 
 ### Why Optimistic Updates?
 
-Allows immediate UI updates when toggling between complete/incomplete and archive/unarchive, and delete, without waiting for the server confirmation. Benefits:
+Allows immediate UI updates when toggling between complete/incomplete and archive/unarchive, and delete, without waiting for the server confirmation. 
+
+**Benefits:**
 
 - **Responsive feel:** No loading spinners for simple actions
 - **Automatic rollback:** React Query reverts if server fails
@@ -307,13 +314,13 @@ Allows immediate UI updates when toggling between complete/incomplete and archiv
 
 - SQLite file database
 - Server-side pagination and status filtering
-- Client-side search (filters current page)
+- Client-side search
 - No authentication
 
 ### Scaling to 10K+ Todos
 
 - Utilize server-side pagination using different strategies
-- Add server-side search endpoint to filter _all_ todos and not just those on the current page
+- Add server-side search endpoint for _all_ todos
 - Add database indexes on `CreatedAt`, `IsCompleted`, `IsArchived`
 
 ### Scaling to Multiple Users
@@ -331,4 +338,4 @@ Allows immediate UI updates when toggling between complete/incomplete and archiv
 - Consider read replicas for queries
 - Add rate limiting middleware
 - Deploy behind load balancer
-- Production security: HTTPS enforcement, antiforgery tokens, password hashing (bcrypt/argon2), tightened CORS policy
+- Production security: HTTPS enforcement, antiforgery tokens, password hashing (i.e. bcrypt), tightened CORS policy

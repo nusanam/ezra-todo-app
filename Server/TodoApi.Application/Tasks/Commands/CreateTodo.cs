@@ -6,5 +6,5 @@ namespace TodoApi.Application.Tasks.Commands;
 public record CreateTodo(
     [Required(ErrorMessage = "Title is required.")]
     [NotWhitespace]
-    [StringLength(100, MinimumLength = 1, ErrorMessage = "Title must be between 1 and 400 characters.")]
+    [StringLength(100, MinimumLength = 1, ErrorMessage = "Title must be between 1 and 100 characters.")]
     string Title);

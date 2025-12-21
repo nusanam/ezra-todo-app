@@ -7,7 +7,7 @@ using TodoApi.Domain.Exceptions;
 namespace TodoApi.Application.Tasks.Services;
 
 /// <summary>
-///     Handles todo CRUD operations, api pagination, and business logic.
+/// Handles todo CRUD operations, api pagination, and business logic.
 /// </summary>
 public class TodoService : ITodoService
 {

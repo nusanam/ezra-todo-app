@@ -4,10 +4,10 @@ using TodoApi.Application.Tasks.DTOs;
 namespace TodoApi.Application.Tasks.Interfaces;
 
 /// <summary>
-///     Service contract for todo operations.
-///     Consolidates CRUD operations into single interface. For systems
-///     requiring independent scaling of reads vs. writes, this can be split
-///     into query and command services following CQRS principles.
+/// Service contract for todo operations.
+/// Consolidates CRUD operations into single interface. For systems
+/// requiring independent scaling of reads vs. writes, this can be split
+/// into query and command services following CQRS principles.
 /// </summary>
 public interface ITodoService
 {
